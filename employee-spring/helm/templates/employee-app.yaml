@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.employeeAppDeployment.name }}
+  labels:
+    app: {{ .Values.employeeAppDeployment.app }}
+spec:
+  replicas: {{ .Values.employeeAppDeployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.employeeAppDeployment.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.employeeAppDeployment.app }}
+    spec:
+      containers:
+        - name: {{ .Values.employeeAppDeployment.containerName }}
+          image: {{ .Values.employeeAppDeployment.containerImage }}
+          ports:
+            - containerPort: {{ .Values.employeeAppDeployment.containerPort }}
+          env:
+            - name: DB_HOST
+              value: {{ .Values.employeeAppDeployment.envDbHost }}
+            - name: DB_SCHEMA
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configMapName }}
+                  key: employee-schema
+          resources:
+            requests:
+              memory: {{ .Values.resourcesApp.requests.memory }}
+              cpu: {{ .Values.resourcesApp.requests.cpu }}
+            limits:
+              memory: {{ .Values.resourcesApp.limits.memory }}
+              cpu: {{ .Values.resourcesApp.limits.cpu }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.employeeAppService.name }}
+spec:
+  selector:
+    app: {{ .Values.employeeAppService.app }}
+  type: {{ .Values.employeeAppService.type }}
+  ports:
+    - protocol: {{ .Values.employeeAppService.protocol }}
+      port: {{ .Values.employeeAppService.port }}
+      targetPort: {{ .Values.employeeAppService.targetPort }}

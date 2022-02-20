@@ -1,0 +1,61 @@
+# Default values for helm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+configMapName: employee-configmap
+configMapValue:
+  employeeSchema: employeedb
+
+secretName: employee-secret
+secretValue:
+  mysqlUser: ZW1wbG95ZWU=
+  mysqlPassword: ZW1wbG95ZWU=
+  mysqlRootPassword: cm9vdA==
+
+employeeDbDeployment:
+  name: employee-db-deployment
+  app: employee-db
+  replicas: 1
+  containerName: employee-db
+  containerImage: mysql:8.0.28
+  containerPort: 3306
+
+resourcesDb:
+  requests:
+    memory: "500Mi"
+    cpu: "500m"
+  limits:
+    memory: "1Gi"
+    cpu: "1000m"
+
+employeeDbService:
+  name: &dbhost employee-db-service
+  app: employee-db
+  protocol: TCP
+  port: 3306
+  targetPort: 3306
+
+employeeAppDeployment:
+  name: employee-app-deployment
+  app: employee-app
+  replicas: 2
+  containerName: employee-app
+  containerImage: kuriankevindev/employee-spring:1.0.0
+  containerPort: 8080
+  envDbHost: *dbhost
+
+employeeAppService:
+  name: employee-app-service
+  app: employee-app
+  type: LoadBalancer
+  protocol: TCP
+  port: 8080
+  targetPort: 8080
+
+resourcesApp:
+  requests:
+    memory: "250Mi"
+    cpu: "250m"
+  limits:
+    memory: "500Mi"
+    cpu: "500m"

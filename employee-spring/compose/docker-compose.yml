@@ -1,0 +1,29 @@
+version: '3.8'
+
+networks:
+  employee-net:
+
+volumes:
+  employee-vol:
+
+services:
+  employee-db:
+    image: mysql:8.0.28
+    environment:
+      - MYSQL_DATABASE=employeedb
+      - MYSQL_USER=employee
+      - MYSQL_PASSWORD=employee
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - employee-vol:/var/lib/mysql
+    networks:
+      - employee-net
+  employee-app:
+    image: kuriankevindev/employee-spring:1.0.0
+    environment:
+      - DB_HOST=employee-db
+    ports:
+      - 8080:8080
+    networks:
+      - employee-net
+    restart: on-failure

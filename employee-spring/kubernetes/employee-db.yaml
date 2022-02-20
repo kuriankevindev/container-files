@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-db-deployment
+  labels:
+    app: employee-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee-db
+  template:
+    metadata:
+      labels:
+        app: employee-db
+    spec:
+      containers:
+        - name: employee-db
+          image: mysql:8.0.28
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: employee-configmap
+                  key: employee-schema
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: employee-secret
+                  key: mysql-user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: employee-secret
+                  key: mysql-password
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: employee-secret
+                  key: mysql-root-password
+          resources:
+            requests:
+              memory: "500Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: employee-db-service
+spec:
+  selector:
+    app: employee-db
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.employeeDbDeployment.name }}
+  labels:
+    app: {{ .Values.employeeDbDeployment.app }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.employeeDbDeployment.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.employeeDbDeployment.app }}
+    spec:
+      containers:
+        - name: {{ .Values.employeeDbDeployment.containerName }}
+          image: {{ .Values.employeeDbDeployment.containerImage }}
+          ports:
+            - containerPort: {{ .Values.employeeDbDeployment.containerPort }}
+          env:
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configMapName }}
+                  key: employee-schema
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: mysql-user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: mysql-password
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: mysql-root-password
+          resources:
+            requests:
+              memory: {{ .Values.resourcesDb.requests.memory }}
+              cpu: {{ .Values.resourcesDb.requests.cpu }}
+            limits:
+              memory: {{ .Values.resourcesDb.limits.memory }}
+              cpu: {{ .Values.resourcesDb.limits.cpu }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.employeeDbService.name }}
+spec:
+  selector:
+    app: {{ .Values.employeeDbService.app }}
+  ports:
+    - protocol: {{ .Values.employeeDbService.protocol }}
+      port: {{ .Values.employeeDbService.port }}
+      targetPort: {{ .Values.employeeDbService.targetPort }}
